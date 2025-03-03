@@ -7,7 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: kalilinux/kali-rolling:latest
-    
+      options: --privileged
+      
     steps:
     - name: Install Core Dependencies
       run: |
@@ -34,21 +35,25 @@ jobs:
       run: ./ngrok authtoken $NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-
-    - name: Install ZeroTier
+  
+    - name: Install Podman and Docker CLI
       run: |
-        curl -s https://install.zerotier.com | sudo bash
-        service zerotier-one start
-
-    - name: Verify ZeroTier Service
-      run: service zerotier-one status || echo "ZeroTier service failed to start"
-
-    - name: Join ZeroTier Network
+        apt-get install -y podman docker.io  # Instalasi Podman dan Docker CLI
+    - name: Verify Podman and Docker CLI Installation
       run: |
-        zerotier-cli join b15644912e35cded
-        sleep 5
-        zerotier-cli listnetworks
+        podman --version
+        docker --version
+        mkdir hello-world
         
+    - name: Connect Docker CLI to Host Daemon
+      run: |
+        export DOCKER_HOST=unix:///var/run/docker.sock
+        echo "DOCKER_HOST=unix:///var/run/docker.sock" >> ~/.bashrc
+
+    - name: Test Docker CLI
+      run: |
+        docker run --rm hello-world || echo "Docker test failed"
+
     - name: Setup SSH
       run: |
         apt-get install -y openssh-server
