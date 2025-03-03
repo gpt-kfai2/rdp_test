@@ -27,7 +27,7 @@ jobs:
 
     - name: Install Kali Linux Security Tools
       run: |
-        apt-get install -y nmap metasploit-framework hydra burpsuite john wireshark nikto aircrack-ng gobuster netcat
+        apt-get install -y nmap metasploit-framework hydra burpsuite john wireshark nikto aircrack-ng gobuster
  
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
