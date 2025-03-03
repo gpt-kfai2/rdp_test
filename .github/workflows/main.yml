@@ -24,7 +24,7 @@ jobs:
         apt-get install -y nodejs
         sleep 5
         npm install -g yarn pnpm ts-node nodemon pm2 typescript eslint prettier vite
-        npm install -g create-react-app create-next-app create-vue vue-cli @angular/cli sveltekit
+        npm install -g create-react-app create-next-app create-vue vue-cli @angular/cli nsolid
         # other
         apt-get install -y python3 python3-pip python3-venv python3-dev
         apt-get install -y openjdk-17-jdk maven
