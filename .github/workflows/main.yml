@@ -27,7 +27,7 @@ jobs:
     - name: Install ZeroTier and Dependencies
       run: |
         # Unduh dan instal libssl1.1 karena tidak ada di kali-rolling terbaru
-        wget http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+        wget http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1w-0+deb11u2_amd64.deb
         dpkg -i libssl1.1_1.1.1w-0+deb11u1_amd64.deb || apt-get install -f -y
         # Unduh ZeroTier versi terbaru
         wget https://download.zerotier.com/debian/buster/pool/main/z/zerotier-one/zerotier-one_1.14.0_amd64.deb
