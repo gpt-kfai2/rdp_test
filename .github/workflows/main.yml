@@ -39,7 +39,16 @@ jobs:
       run: ./ngrok authtoken $NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-  
+
+    - name: Install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh  # Instalasi Ollama menggunakan curl
+
+    - name: Run Ollama in Background
+      run: |
+        nohup ollama serve &  # Jalankan Ollama di latar belakang
+        sleep 5  # Tunggu sebentar untuk memastikan Ollama berjalan
+        
     - name: Install Podman and Docker CLI
       run: |
         apt-get install -y podman docker.io  # Instalasi Podman dan Docker CLI
