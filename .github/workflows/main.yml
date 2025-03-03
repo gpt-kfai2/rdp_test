@@ -37,12 +37,16 @@ jobs:
     
     - name: Setup SSH
       run: |
+        # Install openssh-server
         apt-get install -y openssh-server
-        systemctl enable ssh
-        systemctl start ssh
+        # Create SSH directory and set permissions
+        mkdir -p /run/sshd
+        chmod 755 /run/sshd
+        # Configure SSH
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
         echo "root:P@ssw0rd!" | chpasswd
-        systemctl restart ssh
+        # Start SSH server manually
+        /usr/sbin/sshd -D &    # Run in background
     
     - name: Create Tunnel
       run: ./ngrok tcp 22
