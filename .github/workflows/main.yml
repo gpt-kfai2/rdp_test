@@ -26,19 +26,14 @@ jobs:
         
     - name: Install ZeroTier
       run: |
-        # Tambahkan GPG key dan repository ZeroTier
-        curl -s https://raw.githubusercontent.com/zerotier/ZeroTierOne/master/doc/contact%40zerotier.com.gpg | gpg --dearmor > /usr/share/keyrings/zerotier-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/zerotier-archive-keyring.gpg] http://download.zerotier.com/debian/kali kali main" > /etc/apt/sources.list.d/zerotier.list
-        apt-get update
-        apt-get install -y zerotier-one
-    
-    - name: Configure ZeroTier
-      run: |
-        # Gabung ke jaringan ZeroTier dengan Network ID
+        # Unduh paket .deb ZeroTier terbaru untuk amd64
+        wget https://download.zerotier.com/debian/buster/pool/main/z/zerotier-one/zerotier-one_1.14.0_amd64.deb
+        # Instal paket
+        dpkg -i zerotier-one_1.14.0_amd64.deb || apt-get install -f -y
+        # Bergabung ke jaringan ZeroTier
         zerotier-cli join ${{ secrets.ZEROTIER_NETWORK_ID }}
-        # Tunggu beberapa detik untuk koneksi
+        # Verifikasi koneksi
         sleep 5
-        # Verifikasi status
         zerotier-cli info
         zerotier-cli listnetworks
     
@@ -56,14 +51,10 @@ jobs:
     - name: Setup SSH
       run: |
         apt-get install -y openssh-server
-        # Generate SSH host keys
         ssh-keygen -A
-        # Configure SSH
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
         echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
-        # Set password root
-        echo "root:P@ssw0rd!" | chpasswd
-        # Start SSH daemon
+        echo "root:123" | chpasswd
         /usr/sbin/sshd -D &
     
     - name: Check SSH Status
