@@ -24,16 +24,22 @@ jobs:
         # Other dev tools
         apt-get install -y git build-essential
         
-    - name: Install ZeroTier
+    - name: Install ZeroTier and Dependencies
       run: |
-        # Unduh paket .deb ZeroTier terbaru untuk amd64
+        # Unduh dan instal libssl1.1 karena tidak ada di kali-rolling terbaru
+        wget http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1w-0+deb11u1_amd64.deb
+        dpkg -i libssl1.1_1.1.1w-0+deb11u1_amd64.deb || apt-get install -f -y
+        # Unduh ZeroTier versi terbaru
         wget https://download.zerotier.com/debian/buster/pool/main/z/zerotier-one/zerotier-one_1.14.0_amd64.deb
-        # Instal paket
+        # Instal ZeroTier
         dpkg -i zerotier-one_1.14.0_amd64.deb || apt-get install -f -y
-        # Bergabung ke jaringan ZeroTier
-        zerotier-cli join ${{ secrets.ZEROTIER_NETWORK_ID }}
-        # Verifikasi koneksi
+        # Jalankan ZeroTier daemon secara manual
+        /usr/sbin/zerotier-one -d &
+        # Tunggu daemon mulai
         sleep 5
+        # Bergabung ke jaringan
+        zerotier-cli join ${{ secrets.ZEROTIER_NETWORK_ID }}
+        # Verifikasi
         zerotier-cli info
         zerotier-cli listnetworks
     
@@ -54,7 +60,7 @@ jobs:
         ssh-keygen -A
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
         echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
-        echo "root:123" | chpasswd
+        echo "root:1234" | chpasswd
         /usr/sbin/sshd -D &
     
     - name: Check SSH Status
