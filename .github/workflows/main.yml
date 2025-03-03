@@ -12,7 +12,7 @@ jobs:
     - name: Install Core Dependencies
       run: |
         apt-get update
-        apt-get install -y wget tar curl gnupg apt-transport-https ca-certificates
+        apt-get install -y sudo wget tar curl gnupg apt-transport-https ca-certificates
         
     - name: Install Development Tools
       run: |
