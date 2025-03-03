@@ -4,22 +4,72 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-
-    runs-on: windows-latest
-
+    runs-on: ubuntu-latest
+    container:
+      image: kalilinux/kali-rolling:latest
+    
     steps:
-    - name: Download
-      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-    - name: Extract
-      run: Expand-Archive ngrok.zip
-    - name: Auth
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+    - name: Install Core Dependencies
+      run: |
+        apt-get update
+        apt-get install -y wget tar curl gnupg apt-transport-https ca-certificates
+        
+    - name: Install Development Tools
+      run: |
+        # Python
+        apt-get install -y python3 python3-pip python3-dev
+        # Node.js
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        apt-get install -y nodejs
+        # Docker
+        curl -fsSL https://get.docker.com | sh
+        # Other dev tools
+        apt-get install -y git build-essential
+        
+    - name: Install Security Tools
+      run: |
+        apt-get install -y \
+          nmap \                  # Network scanning
+          metasploit-framework \  # Penetration testing framework
+          sqlmap \               # SQL injection
+          burpsuite \           # Web security testing
+          aircrack-ng \         # Wireless network auditing
+          hydra \              # Password cracking
+          john \               # Password cracker
+          hashcat \            # Advanced password recovery
+          wireshark \          # Network protocol analyzer
+          tcpdump \            # Network packet analyzer
+          nikto \             # Web server scanner
+          dirb \              # Web content scanner
+          wpscan \            # WordPress security scanner
+          theharvester \      # OSINT gathering
+          recon-ng \          # Reconnaissance framework
+          maltego \           # Intelligence and forensics
+          Volatility \        # Memory forensics
+          autopsy \           # Digital forensics
+          exploitdb \         # Exploit database
+          gobuster \          # Directory/file brute forcing
+          crackmapexec        # Network pentesting tool
+        
+    - name: Download ngrok
+      run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
+    
+    - name: Extract ngrok
+      run: tar -xzf ngrok.tgz
+    
+    - name: Auth ngrok
+      run: ./ngrok authtoken $NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    - name: Enable TS
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-    - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-    - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+    
+    - name: Setup SSH
+      run: |
+        apt-get install -y openssh-server
+        systemctl enable ssh
+        systemctl start ssh
+        echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+        echo "root:P@ssw0rd!" | chpasswd
+        systemctl restart ssh
+    
     - name: Create Tunnel
-      run: .\ngrok\ngrok.exe tcp 3389
+      run: ./ngrok tcp 22
