@@ -20,8 +20,18 @@ jobs:
         # Python
         apt-get install -y python3 python3-pip python3-dev
         # Node.js
-        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
         apt-get install -y nodejs
+        sleep 5
+        npm install -g yarn pnpm ts-node nodemon pm2 typescript eslint prettier vite
+        npm install -g create-react-app create-next-app create-vue vue-cli @angular/cli sveltekit
+        # other
+        apt-get install -y python3 python3-pip python3-venv python3-dev
+        apt-get install -y openjdk-17-jdk maven
+        apt-get install -y php-cli composer
+        apt-get install -y ruby-full
+        apt-get install -y golang
+        apt-get install -y rustc cargo
         # Other dev tools
         apt-get install -y git build-essential
 
@@ -51,16 +61,11 @@ jobs:
       run: |
         podman --version
         docker --version
-        mkdir hello-world
         
     - name: Connect Docker CLI to Host Daemon
       run: |
         export DOCKER_HOST=unix:///var/run/docker.sock
         echo "DOCKER_HOST=unix:///var/run/docker.sock" >> ~/.bashrc
-
-    - name: Test Docker CLI
-      run: |
-        docker run --rm hello-world || echo "Docker test failed"
 
     - name: Setup SSH
       run: |
