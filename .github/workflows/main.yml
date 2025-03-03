@@ -24,25 +24,6 @@ jobs:
         # Other dev tools
         apt-get install -y git build-essential
         
-    - name: Install ZeroTier and Dependencies
-      run: |
-        # Unduh dan instal libssl1.1 karena tidak ada di kali-rolling terbaru
-        wget http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1w-0+deb11u2_amd64.deb
-        dpkg -i libssl1.1_1.1.1w-0+deb11u1_amd64.deb || apt-get install -f -y
-        # Unduh ZeroTier versi terbaru
-        wget https://download.zerotier.com/debian/buster/pool/main/z/zerotier-one/zerotier-one_1.14.0_amd64.deb
-        # Instal ZeroTier
-        dpkg -i zerotier-one_1.14.0_amd64.deb || apt-get install -f -y
-        # Jalankan ZeroTier daemon secara manual
-        /usr/sbin/zerotier-one -d &
-        # Tunggu daemon mulai
-        sleep 5
-        # Bergabung ke jaringan
-        zerotier-cli join ${{ secrets.ZEROTIER_NETWORK_ID }}
-        # Verifikasi
-        zerotier-cli info
-        zerotier-cli listnetworks
-    
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
     
@@ -53,29 +34,50 @@ jobs:
       run: ./ngrok authtoken $NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    
+
+    - name: Install ZeroTier
+      run: |
+        curl -s https://install.zerotier.com | sudo bash
+        service zerotier-one start
+
+    - name: Verify ZeroTier Service
+      run: service zerotier-one status || echo "ZeroTier service failed to start"
+
+    - name: Join ZeroTier Network
+      run: |
+        zerotier-cli join b15644912e35cded
+        sleep 5
+        zerotier-cli listnetworks
+        
     - name: Setup SSH
       run: |
         apt-get install -y openssh-server
+        # Generate SSH host keys
         ssh-keygen -A
+        # Configure SSH
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-        echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+        echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config  # Pastikan autentikasi password diizinkan
+        # Set password root dengan cara yang lebih eksplisit
         echo "root:1234" | chpasswd
+        # Verifikasi password di-set
+        grep root /etc/shadow
+        # Start SSH daemon
         /usr/sbin/sshd -D &
     
     - name: Check SSH Status
       run: |
-        sleep 5
+        sleep 5  # Tunggu sebentar agar sshd mulai
         ps aux | grep sshd || echo "SSHD not running"
         netstat -tuln | grep 22 || echo "Port 22 not open"
     
     - name: Create Tunnel
       run: |
-        ./ngrok tcp 22 &
-        sleep 5
+        ./ngrok tcp 22 &  # Jalankan ngrok di background
+        sleep 5  # Tunggu ngrok mulai
+        # Tampilkan URL tunnel
         curl -s http://localhost:4040/api/tunnels | grep -o "tcp://[^\"]*"
 
     - name: Keep Alive
       run: |
         echo "SSH tunnel is running. Connect using the ngrok URL above."
-        sleep 360000
+        sleep 360000  # Jaga tunnel hidup selama 1 jam
