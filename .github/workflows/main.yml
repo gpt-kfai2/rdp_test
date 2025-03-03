@@ -44,11 +44,6 @@ jobs:
       run: |
         curl -fsSL https://ollama.com/install.sh | sh  # Instalasi Ollama menggunakan curl
 
-    - name: Run Ollama in Background
-      run: |
-        nohup ollama serve &  # Jalankan Ollama di latar belakang
-        sleep 5  # Tunggu sebentar untuk memastikan Ollama berjalan
-        
     - name: Install Podman and Docker CLI
       run: |
         apt-get install -y podman docker.io  # Instalasi Podman dan Docker CLI
@@ -98,4 +93,5 @@ jobs:
     - name: Keep Alive
       run: |
         echo "SSH tunnel is running. Connect using the ngrok URL above."
+        ollama serve
         sleep 360000  # Jaga tunnel hidup selama 1 jam
