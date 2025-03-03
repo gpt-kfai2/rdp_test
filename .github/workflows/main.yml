@@ -24,31 +24,6 @@ jobs:
         # Other dev tools
         apt-get install -y git build-essential
         
-    - name: Install Security Tools
-      run: |
-        apt-get install -y \
-          nmap \                  # Network scanning
-          metasploit-framework \  # Penetration testing framework
-          sqlmap \               # SQL injection
-          burpsuite \           # Web security testing
-          aircrack-ng \         # Wireless network auditing
-          hydra \              # Password cracking
-          john \               # Password cracker
-          hashcat \            # Advanced password recovery
-          wireshark \          # Network protocol analyzer
-          tcpdump \            # Network packet analyzer
-          nikto \             # Web server scanner
-          dirb \              # Web content scanner
-          wpscan \            # WordPress security scanner
-          theharvester \      # OSINT gathering
-          recon-ng \          # Reconnaissance framework
-          maltego \           # Intelligence and forensics
-          Volatility \        # Memory forensics
-          autopsy \           # Digital forensics
-          exploitdb \         # Exploit database
-          gobuster \          # Directory/file brute forcing
-          crackmapexec        # Network pentesting tool
-        
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
     
