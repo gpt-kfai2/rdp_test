@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: kalilinux/kali-rolling:latest
-      options: --privileged
+      options: --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro
       
     steps:
     - name: Install Core Dependencies
@@ -25,6 +25,22 @@ jobs:
         # Other dev tools
         apt-get install -y git build-essential
         
+    - name: Install systemd and Docker CLI
+      run: |
+        apt-get install -y systemd docker.io podman
+        systemctl --version  # Verifikasi systemd sudah terpasang
+
+    - name: Enable and Start systemd
+      run: |
+        # Start systemd inside container
+        /usr/lib/systemd/systemd &
+        sleep 5  # Tunggu systemd untuk inisialisasi
+
+    - name: Test systemd and systemctl
+      run: |
+        # Periksa status systemd
+        systemctl status || echo "systemd not running"
+
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
     
@@ -36,9 +52,6 @@ jobs:
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
   
-    - name: Install Podman and Docker CLI
-      run: |
-        apt-get install -y podman docker.io  # Instalasi Podman dan Docker CLI
     - name: Verify Podman and Docker CLI Installation
       run: |
         podman --version
