@@ -21,8 +21,6 @@ jobs:
         # Node.js
         curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
         apt-get install -y nodejs
-        # Docker
-        curl -fsSL https://get.docker.com | sh
         # Other dev tools
         apt-get install -y git build-essential
         
