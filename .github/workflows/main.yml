@@ -37,16 +37,33 @@ jobs:
     
     - name: Setup SSH
       run: |
-        # Install openssh-server
         apt-get install -y openssh-server
-        # Create SSH directory and set permissions
-        mkdir -p /run/sshd
-        chmod 755 /run/sshd
+        # Generate SSH host keys
+        ssh-keygen -A
         # Configure SSH
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-        echo "root:P@ssw0rd!" | chpasswd
-        # Start SSH server manually
-        /usr/sbin/sshd -D &    # Run in background
+        echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config  # Pastikan autentikasi password diizinkan
+        # Set password root dengan cara yang lebih eksplisit
+        echo "root:1234" | chpasswd
+        # Verifikasi password di-set
+        grep root /etc/shadow
+        # Start SSH daemon
+        /usr/sbin/sshd -D &
+    
+    - name: Check SSH Status
+      run: |
+        sleep 5  # Tunggu sebentar agar sshd mulai
+        ps aux | grep sshd || echo "SSHD not running"
+        netstat -tuln | grep 22 || echo "Port 22 not open"
     
     - name: Create Tunnel
-      run: ./ngrok tcp 22
+      run: |
+        ./ngrok tcp 22 &  # Jalankan ngrok di background
+        sleep 5  # Tunggu ngrok mulai
+        # Tampilkan URL tunnel
+        curl -s http://localhost:4040/api/tunnels | grep -o "tcp://[^\"]*"
+
+    - name: Keep Alive
+      run: |
+        echo "SSH tunnel is running. Connect using the ngrok URL above."
+        sleep 36000  # Jaga tunnel hidup selama 1 jam
