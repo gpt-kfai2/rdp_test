@@ -24,6 +24,24 @@ jobs:
         # Other dev tools
         apt-get install -y git build-essential
         
+    - name: Install ZeroTier
+      run: |
+        # Tambahkan GPG key dan repository ZeroTier
+        curl -s https://raw.githubusercontent.com/zerotier/ZeroTierOne/master/doc/contact%40zerotier.com.gpg | gpg --dearmor > /usr/share/keyrings/zerotier-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/zerotier-archive-keyring.gpg] http://download.zerotier.com/debian/kali kali main" > /etc/apt/sources.list.d/zerotier.list
+        apt-get update
+        apt-get install -y zerotier-one
+    
+    - name: Configure ZeroTier
+      run: |
+        # Gabung ke jaringan ZeroTier dengan Network ID
+        zerotier-cli join ${{ secrets.ZEROTIER_NETWORK_ID }}
+        # Tunggu beberapa detik untuk koneksi
+        sleep 5
+        # Verifikasi status
+        zerotier-cli info
+        zerotier-cli listnetworks
+    
     - name: Download ngrok
       run: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz
     
@@ -42,28 +60,25 @@ jobs:
         ssh-keygen -A
         # Configure SSH
         echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-        echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config  # Pastikan autentikasi password diizinkan
-        # Set password root dengan cara yang lebih eksplisit
-        echo "root:1234" | chpasswd
-        # Verifikasi password di-set
-        grep root /etc/shadow
+        echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+        # Set password root
+        echo "root:P@ssw0rd!" | chpasswd
         # Start SSH daemon
         /usr/sbin/sshd -D &
     
     - name: Check SSH Status
       run: |
-        sleep 5  # Tunggu sebentar agar sshd mulai
+        sleep 5
         ps aux | grep sshd || echo "SSHD not running"
         netstat -tuln | grep 22 || echo "Port 22 not open"
     
     - name: Create Tunnel
       run: |
-        ./ngrok tcp 22 &  # Jalankan ngrok di background
-        sleep 5  # Tunggu ngrok mulai
-        # Tampilkan URL tunnel
+        ./ngrok tcp 22 &
+        sleep 5
         curl -s http://localhost:4040/api/tunnels | grep -o "tcp://[^\"]*"
 
     - name: Keep Alive
       run: |
         echo "SSH tunnel is running. Connect using the ngrok URL above."
-        sleep 36000  # Jaga tunnel hidup selama 1 jam
+        sleep 360000
